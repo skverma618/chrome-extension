@@ -6,6 +6,7 @@
   "permissions": [
     "activeTab"
   ],
+  "browser_action": {},
   "action": {
     "default_popup": "index.html"
   },
@@ -16,6 +17,6 @@
     }
   ],
   "background": {
-    "service_worker": "background.js"
+    "scripts": "background.js"
   }
 }

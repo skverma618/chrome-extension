@@ -5,7 +5,7 @@ import SidebarContent from './components/SidebarContent';
 import AccordionTransition from './components/AccordionTransition';
 import { IoLogoChrome } from "react-icons/io";
 import axios from 'axios';
-
+import ReactDOM from 'react-dom/client';
 
 function App() {
   const [productId, setProductId] = useState('');
@@ -53,11 +53,12 @@ function App() {
       // Handle errors
     }
   };
-  
+
+
   const getAsin = async () => {
     // Send a message to content.js requesting the DOM
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      chrome.tabs.sendMessage(tabs[0].id, { action: "getDOM" }, function (response) {
+      chrome.tabs.sendMessage(tabs[0].id, { action: "getasin" }, function (response) {
         if (chrome.runtime.lastError) {
           console.error("Error:", chrome.runtime.lastError.message);
         } else {

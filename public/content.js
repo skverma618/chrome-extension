@@ -8,6 +8,14 @@ console.log('Content script loaded');
 //   }
 // });
 
+const attachReactApp = (reactApp) => {
+  const container = document.createElement("div");
+  container.id = "react-app-container";
+  document.body.appendChild(container);
+
+  ReactDOM.render(reactApp, container);
+};
+
 // Inject the sidebar into the current web page
 function injectSidebar() {
   console.log('Injecting sidebar');
@@ -15,10 +23,9 @@ function injectSidebar() {
   sidebar.id = 'extension-sidebar';
   sidebar.innerHTML = `
     <div id="sidebar">
-      <p>.</p>
+      <p>sidebar.</p>
     </div>
   `;
-  document.body.appendChild(sidebar);
 
   // Style the sidebar
   const sidebarStyle = sidebar.style;
@@ -34,19 +41,30 @@ function injectSidebar() {
   bodyStyle.marginRight = '30vw'; // Adjust margin to make space for the sidebar
   bodyStyle.transition = 'margin-right 0.3s ease'; // Add transition for smooth animation
 
-  const reactAppFrame = document.createElement('div');
-  reactAppFrame.innerHTML = fetch(chrome.runtime.getURL('./index.html')).then((response) => {
-    console.log('response', response);
-    console.log('response.text()', response.text());
-    response.text()
+  document.body.appendChild(sidebar);
+console.log('sidebar', sidebar);
+  chrome.runtime.sendMessage({ action: "getReact" }, function(response) {
+    if (chrome.runtime.lastError) {
+      console.error("Error:", chrome.runtime.lastError.message);
+    } else {
+      console.log("Received React app from index.js:", response.reactApp);
+      sidebar.innerHTML = response.reactApp;
+      document.body.appendChild(sidebar);
+    }
   });
-  reactAppFrame.style.width = '100%';
-  reactAppFrame.style.height = '100%';
-  sidebar.appendChild(reactAppFrame);
 
-  console.log('reactAppFrame', reactAppFrame);
+  // const reactAppFrame = document.createElement('div');
+  // reactAppFrame.innerHTML = fetch(chrome.runtime.getURL('/static/js/main.js')).then((response) => {
+  //   console.log('response', response);
+  //   console.log('response.text()', response.text());
+  //   response.text()
+  // });
+  // reactAppFrame.style.width = '100%';
+  // reactAppFrame.style.height = '100%';
+  // sidebar.appendChild(reactAppFrame);
 
-  console.log('reactAppFrame', reactAppFrame);
+  // console.log('reactAppFrame', reactAppFrame);
+
   // ReactDOM.render(
   //   sidebar
   // );
@@ -60,6 +78,7 @@ injectSidebar();
 // Listen for messages from app.js
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   console.log("Message received in content.js:");
+
   if (request.action === "getDOM") {
     console.log("Sending DOM to app.js:");
     const element = document.querySelector("#productDetails_detailBullets_sections1 > tbody > tr:nth-child(1) > td");
@@ -104,3 +123,10 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   }
 });
 
+// Example of sending a message from content script to React app
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+  if (message.action === 'exampleAction') {
+    // Example of sending data to React app
+    window.postMessage({ type: 'exampleMessageType', data: message.data }, '*');
+  }
+});
