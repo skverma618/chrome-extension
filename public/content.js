@@ -22,111 +22,98 @@ function injectSidebar() {
   const sidebar = document.createElement('div');
   sidebar.id = 'extension-sidebar';
   sidebar.innerHTML = `
-    <div id="sidebar">
-      <p>sidebar.</p>
-    </div>
+    <div id="sidebar" style="position: absolute; bottom: 8px; left: 10px">
+    <svg id="moveLeftButton" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <path fill="white" d="M12 2c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-10h4v-4h-4v4z"/>
+  </svg>
+  <svg id="moveRightButton" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <path fill="white" d="M12 2c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4-10h-8v-4h8v4z"/>
+  </svg>
+</div>
   `;
 
   // Style the sidebar
-  const sidebarStyle = sidebar.style;
-  sidebarStyle.position = 'fixed';
-  sidebarStyle.top = '0';
-  sidebarStyle.right = '0';
-  sidebarStyle.width = '30vw';
-  sidebarStyle.height = '100vh'; // 1000vh to ensure the sidebar extends beyond the viewport height
-  sidebarStyle.backgroundColor = '#D5F0D8'; // Adjust as needed
+  sidebar.style.cssText = `
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 27vw;
+    height: 100vh;
+    background-image: linear-gradient(to top, #133224 0%, #76F99B 30%, #133224 90%, #76F99B 100%);
+    border-left: 1px solid #ccc;
+    z-index: 1000;
+  `;
+
+  // Create an iframe element
+  const iframe = document.createElement('iframe');
+  const currentUrl = window.location.href;
+  const matches = currentUrl.match(/\/dp\/([A-Z0-9]{10})/);
+  const asin = matches[1];
+
+  const iframeUrl = `http://localhost:3000/${asin}`;
+  console.log('asin', asin);
+  console.log('iframeUrl', iframeUrl);
+  // Set attributes for the iframe
+  iframe.src = iframeUrl; // Set the URL to load
+  iframe.style.cssText = `
+    width: 100%;
+    height: 100%;
+    border: none;
+  `;
+
+  // Append the iframe to the sidebar
+  sidebar.appendChild(iframe);
 
   // Style the original website content
-  const bodyStyle = document.body.style;
-  bodyStyle.marginRight = '30vw'; // Adjust margin to make space for the sidebar
-  bodyStyle.transition = 'margin-right 0.3s ease'; // Add transition for smooth animation
+  document.body.style.cssText = `
+    width: 73vw;
+    margin-right: 30vw;
+    transition: margin-right 0.3s ease;
+  `;
 
+  // Append the sidebar to the document body
   document.body.appendChild(sidebar);
-console.log('sidebar', sidebar);
-  chrome.runtime.sendMessage({ action: "getReact" }, function(response) {
-    if (chrome.runtime.lastError) {
-      console.error("Error:", chrome.runtime.lastError.message);
-    } else {
-      console.log("Received React app from index.js:", response.reactApp);
-      sidebar.innerHTML = response.reactApp;
-      document.body.appendChild(sidebar);
-    }
+
+  // Add event listener to move left button
+  const moveLeftButton = document.getElementById('moveLeftButton');
+  moveLeftButton.addEventListener('click', function () {
+    document.body.style.cssText = `
+      width: 73vw;
+      position: absolute;
+      right: 0;
+      transition: margin-left 0.3s ease;
+    `;
+    sidebar.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 27vw;
+      height: 100vh;
+      background-image: linear-gradient(to top, #133224 0%, #76F99B 30%, #133224 90%, #76F99B 100%);
+      border-right: 1px solid #ccc;
+      z-index: 1000;
+    `;
   });
 
-  // const reactAppFrame = document.createElement('div');
-  // reactAppFrame.innerHTML = fetch(chrome.runtime.getURL('/static/js/main.js')).then((response) => {
-  //   console.log('response', response);
-  //   console.log('response.text()', response.text());
-  //   response.text()
-  // });
-  // reactAppFrame.style.width = '100%';
-  // reactAppFrame.style.height = '100%';
-  // sidebar.appendChild(reactAppFrame);
-
-  // console.log('reactAppFrame', reactAppFrame);
-
-  // ReactDOM.render(
-  //   sidebar
-  // );
+  // Add event listener to move right button
+  const moveRightButton = document.getElementById('moveRightButton');
+  moveRightButton.addEventListener('click', function () {
+    document.body.style.cssText = `
+      width: 73vw;
+      margin-right: 30vw;
+      transition: margin-right 0.3s ease;
+    `;
+    sidebar.style.cssText = `
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 27vw;
+      height: 100vh;
+      background-image: linear-gradient(to top, #133224 0%, #76F99B 30%, #133224 90%, #76F99B 100%);
+      border-left: 1px solid #ccc;
+      z-index: 1000;
+    `;
+  });
 }
 
-// Inject the sidebar when the content script is loaded
-
 injectSidebar();
-
-
-// Listen for messages from app.js
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  console.log("Message received in content.js:");
-
-  if (request.action === "getDOM") {
-    console.log("Sending DOM to app.js:");
-    const element = document.querySelector("#productDetails_detailBullets_sections1 > tbody > tr:nth-child(1) > td");
-    if (element) {
-      const textContent = element.textContent.trim();
-      console.log("Element found using CSS selector:", textContent);
-      sendResponse({ asin: textContent });
-    } else {
-      console.error("Element not found using CSS selector");
-    }
-  }
-  // Ensure that sendResponse is called asynchronously
-  return true;
-});
-
-// Listen for messages from the background script
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-  if (message.action === "fetchImage") {
-    // Get the image URL from the message
-    const imageUrl = message.imageUrl;
-
-    // Fetch the image
-    fetch(imageUrl)
-      .then(response => response.blob())
-      .then(blob => {
-        // Convert the blob to a data URL
-        const reader = new FileReader();
-        reader.onload = function () {
-          const dataUrl = reader.result;
-          // Send the data URL back to the background script
-          sendResponse({ imageDataUrl: dataUrl });
-        };
-        reader.readAsDataURL(blob);
-      })
-      .catch(error => {
-        console.error("Error fetching image:", error);
-        // Handle errors
-      });
-
-    // Return true to indicate that the response will be sent asynchronously
-    return true;
-  }
-});
-
-// Example of sending a message from content script to React app
-chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-  if (message.action === 'exampleAction') {
-    // Example of sending data to React app
-    window.postMessage({ type: 'exampleMessageType', data: message.data }, '*');
-  }
-});
