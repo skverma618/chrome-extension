@@ -6,10 +6,16 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
+const Main = () => {
+  return (
+    <div>
+      This is a trial one.
+    </div>
+  )};
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === "getReact") {
-    sendResponse({ reactApp: <App /> });
+    sendResponse({ reactApp: <Main /> });
   }
 });
 
