@@ -8,6 +8,7 @@ import axios from 'axios';
 import ReactDOM from 'react-dom/client';
 
 function App() {
+  console.log("App.js");
   const [productId, setProductId] = useState('');
   const [productDetails, setProductDetails] = useState(null);
   const [asin, setAsin] = useState(null);
